@@ -1,9 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Unity.Netcode; // 1. Add the Netcode namespace
+using Unity.Netcode;
 
 [RequireComponent(typeof(CharacterController))]
-// 2. Change MonoBehaviour to NetworkBehaviour
 public class PlayerMovement : NetworkBehaviour 
 {
     [Header("Movement Settings")]
@@ -48,31 +47,30 @@ public class PlayerMovement : NetworkBehaviour
 
     private void Update()
     {
-        // 3. The Magic Network Check: If this isn't our player, ignore the rest of the code!
         if (!IsOwner) return;
 
-        // Ground Check
+        //Ground Check
         isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0) velocity.y = -2f; 
 
-        // Speed & Sprinting
+        //Speed and Sprinting
         float targetSpeed = walkSpeed;
         if (sprintAction != null && sprintAction.action.IsPressed()) targetSpeed = sprintSpeed;
         currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedSmoothVelocity, speedSmoothTime);
 
-        // Smooth Movement
+        //Movement
         Vector2 targetInput = moveAction.action.ReadValue<Vector2>();
         currentInputVector = Vector2.SmoothDamp(currentInputVector, targetInput, ref smoothInputVelocity, movementSmoothTime);
         Vector3 move = transform.right * currentInputVector.x + transform.forward * currentInputVector.y;
         controller.Move(move * currentSpeed * Time.deltaTime);
 
-        // Jumping
+        //Jumping
         if (jumpAction != null && jumpAction.action.IsPressed() && isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
 
-        // Gravity
+        //Gravity
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
